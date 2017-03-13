@@ -7,6 +7,7 @@ const app = document.getElementById('app');
 ReactDOM.render(<Layout/>, app);*/
 
 import { applyMiddleware, createStore } from "redux";
+import logger from 'redux-logger';
 
 const reducer = function(state, action) {
  if(action.type == 'INC'){
@@ -21,25 +22,7 @@ const reducer = function(state, action) {
  return state;
 }
 
-//logger is a middleware, npm packages are available, but this manual
-const logger = (store) => (next) => (action) => {
-    // this the middleware code, anithing even, action.type='DEC' :)
-    console.log('action fired ', action); 
-    //reducers will not execute unless you secify the next in the middleware
-    next(action); //reducer call
-}
-
-//error is another middleware
-const error = (store) => (next) => (action) => {
-    try {
-        next(action); // tries the reducer function
-    } catch(e) {
-        console.log('AHHHH I am in the catch clause : ', e);
-    }
-    
-}
-
-const middleware = applyMiddleware(logger,error); // add the middle ware list here
+const middleware = applyMiddleware(logger()); // add the middle ware list here
 
 const store = createStore(reducer, 0, middleware);
 
@@ -51,4 +34,4 @@ store.dispatch({type: 'INC', payload:1}) //run through reducer
 store.dispatch({type: 'DEC', payload:1}) 
 store.dispatch({type: 'DEC', payload:100}) 
 store.dispatch({type: 'INC', payload:1}) 
-store.dispatch({type: 'E', payload:'Oops! This is an Error!'}) 
+//store.dispatch({type: 'E', payload:'Oops! This is an Error!'}) 
