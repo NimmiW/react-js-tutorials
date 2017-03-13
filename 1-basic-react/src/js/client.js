@@ -8,21 +8,35 @@ ReactDOM.render(<Layout/>, app);*/
 
 import { applyMiddleware, createStore } from "redux";
 import logger from 'redux-logger';
+import thunk from 'redux-thunk';
+import axios from 'axios';
 
-const reducer = function(state, action) {
- if(action.type == 'INC'){
-     return state + action.payload;
+const initialState = {
+    fetching: false,
+    fetched: false,
+    friends: [],
+    error: null
+}
+
+const reducer = function(state = initialState, action) {
+ if(action.type == 'FETCH_FRIENDS_START'){
+     return {...state, fetching: true};
  }
- if(action.type == 'DEC'){
-     return state - action.payload;
+ if(action.type == 'RECEIVE_FRIENDS'){
+     return {
+         ...state, 
+         fetching: false, 
+         fetched:true, 
+         friends:action.payload
+     };
  }
- if(action.type == 'E'){
-     return new Error("Error : " , action.payload);
+ if(action.type == 'FETCH_FRIENDS_ERROR'){
+     return {...state, fetching: false, error: action.payload};
  }
  return state;
 }
 
-const middleware = applyMiddleware(logger()); // add the middle ware list here
+const middleware = applyMiddleware(thunk, logger()); // add the middle ware list here
 
 const store = createStore(reducer, 0, middleware);
 
@@ -30,8 +44,16 @@ store.subscribe(() => {
     console.log('store changed',store.getState())
 })
 
-store.dispatch({type: 'INC', payload:1}) //run through reducer
-store.dispatch({type: 'DEC', payload:1}) 
-store.dispatch({type: 'DEC', payload:100}) 
-store.dispatch({type: 'INC', payload:1}) 
-//store.dispatch({type: 'E', payload:'Oops! This is an Error!'}) 
+//mutiple actions are happening with one async action
+store.dispatch((dispatch) => {
+    dispatch({type: 'FETCH_FRIENDS_START'}) ;
+    //http://rest.learncode.academy/api/learncode/friends
+    axios.get('http://rest.learncode.academy/api/learncode/friends')
+        .then((reponse) => {
+            dispatch({type:'RECEIVE_FRIENDS', payload:response})
+        })
+        .catch((err) => {
+            dispatch({type:'FETCH_FRIENDS_ERROR', payload:err})
+        })
+    
+})
