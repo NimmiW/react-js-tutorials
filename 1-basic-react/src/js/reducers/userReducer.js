@@ -26,7 +26,7 @@ export default function reducer(state={
                 ...state,
                 fetching: false,
                 fetched: true,
-                user: sction.payload
+                user: action.payload
             }
         }
         case 'SET_USER_NAME': {
